@@ -17,27 +17,29 @@ import configs from '../../../config'
 export default class index extends Component {
     constructor(){
         super()
-       
+      
                       
         this.state={
             inputEmail:"",
             inputPassword:""
         }
+      
     }
-
 
    async componentWillMount(){
-      var value =await  AsyncStorage.getItem('token')
-      (value===null) ?
-      this.props.navigation.navigate('Login')
-                    :
+      var value = await AsyncStorage.getItem('token')
+      (value !== null) ?
       this.props.navigation.navigate('Chat')
+                    :
+      this.props.navigation.navigate('Login')
     }
 
+  
   //  handleNavigation = () =>{
   //       this.props.navigation.navigate('Home')
   //   }
     handleLogin =  () => {
+      that=this
         axios.post(`http://${configs.ipaddress}:3000/auth/signin`,{
           "email" : this.state.inputEmail,
           "password" : this.state.inputPassword
@@ -46,16 +48,15 @@ export default class index extends Component {
           const  data = res.data.data
           axios.post(`http://${configs.ipaddress}:3000/auth/create/authorization`,{
             "user_id" : data.id,
-            "name" : data.name,
             "email" :data.email
           })
           .then (res => {
+           AsyncStorage.setItem('token', res.data.data.token);
             console.log(res.data.data.token)
-            console.log(data)
+            console.log("id ",data.id)
             if (data == null){
               alert("Tidak Dapat Menemukan Akun")
             }else{
-              AsyncStorage.setItem('token', res.data.data.token);
               this.props.navigation.navigate('Chat')
             }
           })
@@ -88,8 +89,8 @@ render(){
 return(
 
 <View style={styles.container}>
+    <Text style={styles.title}>PUBLIC GROUP CHAT</Text>
     <TextInput style={styles.inputBox}
-        underlineColorAndroid='white'
         placeholder="Email"
         placeholderTextColor = "#ffffff"
         selectionColor="#fff"
@@ -98,7 +99,6 @@ return(
         })}
     />
     <TextInput style={styles.inputBox}
-        underlineColorAndroid='white'
         placeholder="Password"
         secureTextEntry={true}
         placeholderTextColor = "#ffffff"
@@ -122,13 +122,20 @@ container : {
     justifyContent:'center',
     alignItems: 'center'
 },
+title:{
+  fontSize:20,
+  fontWeight:"700",
+  color:"#1c313a",
+  margin:10
+},
 inputBox: {
     width:300,
     borderRadius: 25,
     paddingHorizontal:16,
     fontSize:16,
-    color:'#ffffff',
-    marginVertical: 10
+    color:'#ffff',
+    marginVertical: 10,
+    backgroundColor:"#aeaeaeae"
 },
 
 button: {

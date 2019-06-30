@@ -11,10 +11,7 @@ import Chat from "./src/pages/Chat/index"
 const AppNavigator = createStackNavigator({
   
   Login: {
-    
     screen: Login,
-    
-    
   },
   Home: {
     screen: Home,
