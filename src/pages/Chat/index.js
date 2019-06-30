@@ -1,6 +1,6 @@
 import React from 'react';
 import {Alert,Modal,Text,TouchableOpacity,View, ImageBackground, StyleSheet, FlatList,AsyncStorage,BackHandler,TextInput ,Button,TouchableHighlight} from 'react-native';
-import { ListItem,Icon } from 'react-native-elements';
+import { ListItem,Icon,Overlay  } from 'react-native-elements';
 import Popover from 'react-native-popover-view'
 // import Message from '../../Components/Message';
 
@@ -217,7 +217,7 @@ export default class index extends React.Component {
         chatTittle:"Public Group Chat",
         topButtonVisible:false
       })} >   
-        <View style={{marginHorizontal:5}} >          
+        <View style={{marginHorizontal:5,color:"#8a9093"}} >          
         <Text>Batal</Text>
         </View>
     </TouchableOpacity>
@@ -232,7 +232,7 @@ export default class index extends React.Component {
 				style={[ styles.container, styles.backgroundImage ]}
 				source={require('../../assets/img/background.png')}>
                 <ListItem 
-                    containerStyle={{backgroundColor:"#fff"}}
+                    containerStyle={{backgroundColor:"#eeeeee"}}
                     title={this.state.chatTittle}
                     titleStyle={{fontWeight:"bold"}}
                     leftElement={
@@ -282,10 +282,10 @@ export default class index extends React.Component {
                         </Modal>
                         <TouchableOpacity  disabled={(this.state.userId==item.user_id) ? false : true} onLongPress={()=>this.setModalVisible(true)} >
                         <View style={ (this.state.userId==item.user_id) ? styles.wrapperMessageRight : styles.wrapperMessageLeft } >
-                            <View style={[
-                                styles.message,
-                                styles.incomingMessage
-                                ]}>
+                            <View style={
+                                [styles.message,
+                                (this.state.userId==item.user_id) ? styles.incomingMessageRight : styles.incomingMessageLeft]
+                                }>
 
                                { 
                                  (this.state.userId==item.user_id)
@@ -398,8 +398,11 @@ const styles = StyleSheet.create({
         borderWidth: 0,
         borderRadius: 10
       },
-      incomingMessage: {
+      incomingMessageRight: {
         backgroundColor: '#E1FFC7'
+      },
+      incomingMessageLeft: {
+        backgroundColor: '#ffff'
       },
       nameUser:{
         fontWeight:"bold"
