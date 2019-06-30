@@ -23,21 +23,11 @@ export default class index extends Component {
             inputEmail:"",
             inputPassword:""
         }
+       
       
     }
 
-   async componentWillMount(){
-      var value = await AsyncStorage.getItem('token')
-      (value !== null) ?
-      this.props.navigation.navigate('Chat')
-                    :
-      this.props.navigation.navigate('Login')
-    }
-
   
-  //  handleNavigation = () =>{
-  //       this.props.navigation.navigate('Home')
-  //   }
     handleLogin =  () => {
       that=this
         axios.post(`http://${configs.ipaddress}:3000/auth/signin`,{
@@ -91,24 +81,29 @@ return(
 <View style={styles.container}>
     <Text style={styles.title}>PUBLIC GROUP CHAT</Text>
     <TextInput style={styles.inputBox}
-        placeholder="Email"
-        placeholderTextColor = "#ffffff"
-        selectionColor="#fff"
+        placeholder="Masukan Email Anda"
+        placeholderTextColor = "grey"
+        returnKeyType = {"next"}
+        onSubmitEditing={() => { this.secondTextInput.focus(); }}
+        autoFocus = {true}
         onChangeText={(text)=>this.setState({
             inputEmail:text
         })}
     />
     <TextInput style={styles.inputBox}
-        placeholder="Password"
+        placeholder="Masukan Password Anda"
         secureTextEntry={true}
-        placeholderTextColor = "#ffffff"
+        ref={(input) => { this.secondTextInput = input; }}
+        returnKeyType = {"go"}
+        autoFocus = {true}
+        placeholderTextColor = "grey"
         onChangeText={(text)=>this.setState({
             inputPassword:text
         })}
     />
     <TouchableOpacity style={styles.button}
             onPress={this.handleLogin}>
-        <Text style={styles.buttonText}>Login</Text>
+        <Text style={styles.buttonText}>MASUK</Text>
     </TouchableOpacity>
 </View>
 )
@@ -117,7 +112,7 @@ return(
 
 const styles = StyleSheet.create({
 container : {
-    backgroundColor: "grey",
+    backgroundColor: "#fff",
     flexGrow: 1,
     justifyContent:'center',
     alignItems: 'center'
@@ -129,17 +124,18 @@ title:{
   margin:10
 },
 inputBox: {
-    width:300,
+    width:"90%",
     borderRadius: 25,
     paddingHorizontal:16,
     fontSize:16,
-    color:'#ffff',
+    color:'grey',
     marginVertical: 10,
-    backgroundColor:"#aeaeaeae"
+    backgroundColor:"#ffff",
+    borderWidth:1
 },
 
 button: {
-    width:300,
+    width:"90%",
     backgroundColor:'#1c313a',
     borderRadius: 25,
     marginVertical: 10,

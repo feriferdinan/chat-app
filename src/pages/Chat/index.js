@@ -1,5 +1,6 @@
 import React from 'react';
-import {Alert,Modal,Text,TouchableOpacity,View, ImageBackground, StyleSheet, FlatList,AsyncStorage,BackHandler,TextInput ,Button,TouchableHighlight} from 'react-native';
+import {Keyboard,ScrollView,Alert,Modal,Text,TouchableOpacity,View, ImageBackground, StyleSheet, 
+  FlatList,AsyncStorage,BackHandler,TextInput ,Button,TouchableHighlight} from 'react-native';
 import { ListItem,Icon,Overlay  } from 'react-native-elements';
 import Popover from 'react-native-popover-view'
 // import Message from '../../Components/Message';
@@ -29,7 +30,7 @@ export default class index extends React.Component {
         }
         setInterval(
           this._getData
-          ,2000)
+          ,1500)
     }
     setModalVisible(visible){
         this.setState({modalVisible:visible})
@@ -63,7 +64,6 @@ export default class index extends React.Component {
     
     _deleteChatConfirm = (id) => {
       this.setState({chatId:id})
-        this.setModalVisible(false)
           Alert.alert(
           'Hapus Chat?',
           "",
@@ -78,9 +78,9 @@ export default class index extends React.Component {
        }
     
       _deleteChat = () => {
-        this.setModalVisible(false)
         console.log(this.state.chatId)
         that = this
+            
          let config = {
           headers: {
             'Authorization': 'jwt ' + this.state.token
@@ -88,7 +88,16 @@ export default class index extends React.Component {
         }
         axios.delete(`http://${configs.ipaddress}:3000/chat/${this.state.chatId}`,config)
         .then(function (response) {
-          console.log(response.data)
+          that.setState({
+            chatId:"",
+            chatTittle:"Public Group Chat",
+            text:"",
+            edited:false,
+            topButtonVisible:false
+        })
+            console.log(response.data)
+          
+          
         })
         
         .catch(function (error) {
@@ -97,8 +106,12 @@ export default class index extends React.Component {
       }
     _updateChatConfirm =(id)=>{
       
+      
       that = this
-      that.setState({edited:true,chatTittle:"",topButtonVisible:true })
+      that.setState({edited:true,
+        chatTittle:"Edit Chat?",
+        topButtonVisible:true,
+       })
        let config = {
         headers: {
           'Authorization': 'jwt ' + this.state.token
@@ -110,34 +123,36 @@ export default class index extends React.Component {
         that.setState({
          text:response.data.data.text,
          chatId:response.data.data.id
-
         })
         that.setModalVisible(false)
       })
-      
       .catch(function (error) {
         console.log(error);
       });
 
     }
 
-    _updateChat = (id) =>{
+    _updateChat = () =>{
       that=this
+      console.log(that.state.chatId);
+      
       let config = {
           headers: {
             'Authorization': 'jwt ' + this.state.token
           }
         }
-        axios.patch(`http://${configs.ipaddress}:3000/chat/${this.state.chatId}`,{
+        axios.patch(`http://${configs.ipaddress}:3000/chat/${that.state.chatId}`,{
           text: this.state.text
         },config)
         .then(function (response) {
+          Keyboard.dismiss();
           console.log(response);
           that.setState({
             chatId:"",
             chatTittle:"Public Group Chat",
             text:"",
-            edited:false
+            edited:false,
+            topButtonVisible:false
         })
         })
         .catch(function (error) {
@@ -145,7 +160,7 @@ export default class index extends React.Component {
         });
     }
 
-    async componentDidMount(){
+    async componentWillMount(){
       that = this
         const valueToken= await AsyncStorage.getItem('token')
         this.setState({
@@ -175,7 +190,7 @@ export default class index extends React.Component {
           })
           console.log(that.state.userId)
         })
-        .catch(function (error) {
+        .catch(function (error) {a
           console.log(error);
         });
        
@@ -193,6 +208,7 @@ export default class index extends React.Component {
           },config)
           .then(function (response) {
             console.log(response);
+            Keyboard.dismiss();
             that.setState({
               text:""
           })
@@ -205,23 +221,27 @@ export default class index extends React.Component {
     deleteAndCancel= ()=> {
       return(
         <View style={{flexDirection:"row"}} >
-        <TouchableOpacity >   
-        <View style={{marginHorizontal:5}} >          
-        <Text></Text>
+        <TouchableHighlight 
+              style={styles.buttonCancel}
+              onPress={()=>this._deleteChatConfirm(this.state.chatId)} >   
+        <View>          
+        <Text style={{padding:5,paddingHorizontal:10,color:"#8a9093"}} >Hapus</Text>
         </View>
-    </TouchableOpacity>
-      <TouchableOpacity onPress={()=>this.setState({
-        text:"",
-        chatId:"",
-        edited:false,
-        chatTittle:"Public Group Chat",
-        topButtonVisible:false
-      })} >   
-        <View style={{marginHorizontal:5,color:"#8a9093"}} >          
-        <Text>Batal</Text>
+        </TouchableHighlight>
+          <TouchableHighlight 
+            style={styles.buttonCancel}
+            onPress={()=>this.setState({
+              text:"",
+              chatId:"",
+              edited:false,
+              chatTittle:"Public Group Chat",
+              topButtonVisible:false
+            })} >   
+        <View>          
+        <Text style={{padding:5,paddingHorizontal:13,color:"#8a9093"}}>Batal</Text>
         </View>
-    </TouchableOpacity>
-    </View>
+      </TouchableHighlight>
+      </View>
       )
     }
 
@@ -236,51 +256,33 @@ export default class index extends React.Component {
                     title={this.state.chatTittle}
                     titleStyle={{fontWeight:"bold"}}
                     leftElement={
-                    <TouchableOpacity onPress={this.handleLogout} >   
-                        <View style={{flexDirection:"row"}} >          
-                        <Icon name="arrowleft" type="antdesign" color="grey" size={20} />
+                    <TouchableHighlight
+                      style={styles.buttonCancel}
+                      onPress={this.handleLogout} >   
+                        <View style={{flexDirection:"row",padding:5}} >          
+                        <Icon name="left" type="antdesign" color="grey" size={16} />
                         <Text>Logout</Text>
                         </View>
-                    </TouchableOpacity>
+                    </TouchableHighlight>
                     }
                     rightElement={
                       (this.state.topButtonVisible==true) ? this.deleteAndCancel() : <View/>
                     }
                    
                 />
-                
+        <ScrollView 
+          ref={ref => this.scrollView = ref}
+          onContentSizeChange={(contentWidth, contentHeight)=>{        
+          this.scrollView.scrollToEnd({animated: true});
+          }}
+         >        
 				<FlatList
 					style={styles.container}
 					data={this.state.messages}
 					keyExtractor={(item, index) => (`message-${index}`)}
 					renderItem={Message = ({ item }) => (
                         <View>
-                         <Modal
-                          animationType="slide"
-                          transparent={true}
-                          visible={this.state.modalVisible}
-                          >
-                          <TouchableOpacity  onPress={()=>this.setModalVisible(false)} >
-                          <View style={{height:460,backgroundColor:"rgba(0, 0, 0, 0.3)"}} />
-                          </TouchableOpacity>
-                          <TouchableOpacity   >
-                            <View style={{positon:"absolute",bottom:0}}>
-                                  <ListItem 
-                                      containerStyle={{backgroundColor:"#ffff"}}
-                                      title="Hapus"
-                                      leftIcon={{ name:"trash",type:"evilicon", color:'grey' }}
-                                      onPress={()=> this._deleteChatConfirm(item.id)}
-                                  />
-                                  <ListItem 
-                                      containerStyle={{backgroundColor:"#ffff"}}
-                                      title="Edit"
-                                      leftIcon={{ name:"pencil",type:"evilicon", color:'grey' }}
-                                      onPress={()=> this._updateChatConfirm(item.id)}
-                                  />
-                              </View>
-                            </TouchableOpacity>  
-                        </Modal>
-                        <TouchableOpacity  disabled={(this.state.userId==item.user_id) ? false : true} onLongPress={()=>this.setModalVisible(true)} >
+                        <TouchableOpacity  disabled={(this.state.userId==item.user_id) ? false : true} onLongPress={()=>this._updateChatConfirm(item.id)} >
                         <View style={ (this.state.userId==item.user_id) ? styles.wrapperMessageRight : styles.wrapperMessageLeft } >
                             <View style={
                                 [styles.message,
@@ -297,11 +299,11 @@ export default class index extends React.Component {
                                    </View>
                                 }
 
-                                <View style={{flexDirection:"row"}}>
+                                <View style={{flex:1,flexDirection:"row",flexWrap:"wrap"}}>
                                     <View>
                                     <Text>{item.text}</Text>
                                     </View>
-                                    <View style={{flex:1,alignContent:"flex-end",alignItems:"flex-end"}} >
+                                    <View style={{flex:1,alignItems:"flex-end"}} >
                                     <Text>{item.createdAt.split('T')[1].split(':').concat().slice(0,2)}</Text>
                                     </View>
                                 </View>
@@ -311,6 +313,7 @@ export default class index extends React.Component {
                         </View>
                     )}
 				/>
+        </ScrollView>
                 
 				<View style={styles.compose}>
 				<TextInput
@@ -318,10 +321,13 @@ export default class index extends React.Component {
 					value={this.state.text}
 					onChangeText={(text) => this.setState({text:text})}
 					editable = {true}
+          returnKeyType = {"send"}
+          focus={(this.state.text==null)?false:true}
+          autoFocus = {true}
 					maxLength = {40}
-                    placeholder="Ketik Pesan"
+          placeholder="Ketik Pesan"
 				/>
-                <TouchableOpacity  onPress={(this.state.edited==true) ? this._updateChat : this.submitText } >
+                <TouchableOpacity   onPress={(this.state.edited==true) ? this._updateChat : this.submitText } >
                     <View
                      style={styles.button}
                      >
@@ -373,6 +379,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         margin: 10,
         borderRadius: 20,
+        backgroundColor:"transparent"
       },
       button: {
         width:40,
@@ -384,14 +391,20 @@ const styles = StyleSheet.create({
         alignItems:"center",
         justifyContent:"center"
     },
+
+    buttonCancel:{
+      marginHorizontal:5,
+      borderWidth:1,
+      borderRadius:5
+    },
     wrapperMessageRight:{
       flexDirection: 'row', justifyContent: 'flex-end'
     },
     wrapperMessageLeft:{
-      
+      flexDirection: 'row',
     },
     message: {
-        width: '70%',
+        width:"70%",
         margin: 10,
         marginVertical: 3,
         padding: 10,
