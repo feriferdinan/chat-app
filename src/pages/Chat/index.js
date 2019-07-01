@@ -1,13 +1,11 @@
 import React from 'react';
-import {Keyboard,ScrollView,Alert,Modal,Text,TouchableOpacity,View, ImageBackground, StyleSheet, 
-  FlatList,AsyncStorage,BackHandler,TextInput ,Button,TouchableHighlight} from 'react-native';
+import {Keyboard,ScrollView,Alert,Modal,Text,TouchableOpacity,View, ImageBackground, StyleSheet,FlatList,AsyncStorage,BackHandler,TextInput ,Button,TouchableHighlight,YellowBox} from 'react-native';
 import { ListItem,Icon,Overlay  } from 'react-native-elements';
 import Popover from 'react-native-popover-view'
-// import Message from '../../Components/Message';
 
 const axios = require('axios');
 import configs from '../../../config'
-import {StackNavigator} from 'react-navigation';
+import { thisTypeAnnotation } from '@babel/types';
 
 export default class index extends React.Component {
   
@@ -19,22 +17,64 @@ export default class index extends React.Component {
           userId:"",
           chatId:"",
           text:"",
-          submittedText:'',
           token:"",
           chatTittle:"Public Group Chat",
           buttonVisible:false,
-          modalVisible:false,
           topButtonVisible:false,
-
           edited:false  
         }
         setInterval(
           this._getData
           ,1500)
     }
-    setModalVisible(visible){
-        this.setState({modalVisible:visible})
-      }
+
+    async componentWillMount(){
+      that = this
+        const valueToken= await AsyncStorage.getItem('token')
+        this.setState({
+          token:valueToken
+        })
+        if(valueToken == null ){
+          await this.props.navigation.navigate('Login')
+          }else{
+            BackHandler.removeEventListener('hardwareBackPress');
+         }
+         let config = {
+          headers: {
+            'Authorization': 'jwt ' + that.state.token
+          }
+        }
+        axios.get(`http://${configs.ipaddress}:3000/user`,config)
+        .then(function (response) {
+          that.setState({
+            userId:response.data.data.id
+          })
+          console.log(that.state.userId)
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
+
+    async componentDidMount(){
+      that = this
+      let config = {
+        headers: {
+            'Authorization': 'jwt ' + that.state.token
+          }
+        }
+        axios.get(`http://${configs.ipaddress}:3000/chat`,config)
+        .then(function (response) {
+          console.log(response.data.data)
+          that.setState({
+            messages:response.data.data
+          })
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+       
+    }
     
     handleLogout = () =>{
         AsyncStorage.clear();
@@ -75,9 +115,9 @@ export default class index extends React.Component {
           ],
           {cancelable: true},
         );
-       }
+    }
     
-      _deleteChat = () => {
+    _deleteChat = () => {
         console.log(this.state.chatId)
         that = this
             
@@ -103,10 +143,8 @@ export default class index extends React.Component {
         .catch(function (error) {
           console.log(error);
         });
-      }
+    }
     _updateChatConfirm =(id)=>{
-      
-      
       that = this
       that.setState({edited:true,
         chatTittle:"Edit Chat?",
@@ -159,42 +197,7 @@ export default class index extends React.Component {
           console.log(error);
         });
     }
-
-    async componentWillMount(){
-      that = this
-        const valueToken= await AsyncStorage.getItem('token')
-        this.setState({
-          token:valueToken
-        })
-        if(valueToken == null ){
-          await this.props.navigation.navigate('Login')
-          }else{
-            BackHandler.removeEventListener('hardwareBackPress');
-         }
-         let config = {
-          headers: {
-            'Authorization': 'jwt ' + valueToken
-          }
-        }
-        axios.get(`http://${configs.ipaddress}:3000/chat`,config)
-        .then(function (response) {
-          console.log(response.data.data)
-          that.setState({
-            messages:response.data.data
-          })
-        })
-        axios.get(`http://${configs.ipaddress}:3000/user`,config)
-        .then(function (response) {
-          that.setState({
-            userId:response.data.data.id
-          })
-          console.log(that.state.userId)
-        })
-        .catch(function (error) {a
-          console.log(error);
-        });
-       
-       }
+    
 
     submitText = ()=>{
         that=this
@@ -222,14 +225,16 @@ export default class index extends React.Component {
       return(
         <View style={{flexDirection:"row"}} >
         <TouchableHighlight 
-              style={styles.buttonCancel}
-              onPress={()=>this._deleteChatConfirm(this.state.chatId)} >   
+          underlayColor="#f8f9fa"
+          style={[styles.buttonCancel,{backgroundColor:"#dc3545",borderWidth:0}]}
+          onPress={()=>this._deleteChatConfirm(this.state.chatId)} >   
         <View>          
-        <Text style={{padding:5,paddingHorizontal:10,color:"#8a9093"}} >Hapus</Text>
+        <Text style={{padding:5,paddingHorizontal:10,color:"#ffff"}} >Hapus</Text>
         </View>
         </TouchableHighlight>
-          <TouchableHighlight 
-            style={styles.buttonCancel}
+          <TouchableHighlight
+            underlayColor="#f8f9fa" 
+            style={[styles.buttonCancel,{borderColor:"#8a9093"}]}
             onPress={()=>this.setState({
               text:"",
               chatId:"",
@@ -238,7 +243,7 @@ export default class index extends React.Component {
               topButtonVisible:false
             })} >   
         <View>          
-        <Text style={{padding:5,paddingHorizontal:13,color:"#8a9093"}}>Batal</Text>
+        <Text style={{padding:5,paddingHorizontal:13,color:"black"}}>Batal</Text>
         </View>
       </TouchableHighlight>
       </View>
@@ -248,27 +253,27 @@ export default class index extends React.Component {
     render() {
         return (
             
-            <ImageBackground
-				style={[ styles.container, styles.backgroundImage ]}
-				source={require('../../assets/img/background.png')}>
+        <ImageBackground
+				  style={[ styles.container, styles.backgroundImage ]}
+				  source={require('../../assets/img/background.png')}>
                 <ListItem 
                     containerStyle={{backgroundColor:"#eeeeee"}}
                     title={this.state.chatTittle}
                     titleStyle={{fontWeight:"bold"}}
                     leftElement={
-                    <TouchableHighlight
-                      style={styles.buttonCancel}
-                      onPress={this.handleLogout} >   
-                        <View style={{flexDirection:"row",padding:5}} >          
-                        <Icon name="left" type="antdesign" color="grey" size={16} />
-                        <Text>Logout</Text>
-                        </View>
-                    </TouchableHighlight>
+                      (this.state.edited==true)?<View/>:
+                        <TouchableHighlight
+                          style={styles.buttonCancel}
+                          onPress={this.handleLogout} >   
+                            <View style={{flexDirection:"row",padding:5}} >          
+                              <Icon name="left" type="antdesign" color="grey" size={16} />
+                              <Text>Logout</Text>
+                            </View>
+                        </TouchableHighlight>
                     }
                     rightElement={
                       (this.state.topButtonVisible==true) ? this.deleteAndCancel() : <View/>
                     }
-                   
                 />
         <ScrollView 
           ref={ref => this.scrollView = ref}
@@ -314,7 +319,6 @@ export default class index extends React.Component {
                     )}
 				/>
         </ScrollView>
-                
 				<View style={styles.compose}>
 				<TextInput
 					style={styles.composeText}
@@ -332,9 +336,9 @@ export default class index extends React.Component {
                      style={styles.button}
                      >
                     { (this.state.edited==true)?
-                    <Icon name="pencil" color="#fff" size={22} type="evilicon" />  
+                    <Icon name="pencil" color="#fff" size={30} type="evilicon" />  
                     :
-                    <Icon name="md-send" color="#fff" size={25} type="ionicon" />  
+                    <Icon name="md-send" color="#fff" size={23} type="ionicon" />  
                     }
                     </View>
                 </TouchableOpacity>
@@ -389,8 +393,9 @@ const styles = StyleSheet.create({
         marginVertical: 10,
         paddingVertical: 13,
         alignItems:"center",
-        justifyContent:"center"
-    },
+        justifyContent:"center",
+        alignContent: 'center',
+      },
 
     buttonCancel:{
       marginHorizontal:5,

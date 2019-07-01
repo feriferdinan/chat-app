@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-
 import {
 StyleSheet,
 Text,
@@ -7,10 +6,10 @@ View,
 TextInput,
 TouchableOpacity,
 AsyncStorage,
-Alert
+Alert,
 } from 'react-native';
+
 const axios = require('axios');
-import { createStackNavigator, createAppContainer } from "react-navigation";
 import configs from '../../../config'
 
 

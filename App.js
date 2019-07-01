@@ -1,35 +1,14 @@
-import React from "react";
-import { View, Text } from "react-native";
-import { createSwitchNavigator, createStackNavigator, createAppContainer } from 'react-navigation';
-import Login from "./src/pages/Login/index"
-import Home from "./src/pages/Home/index"
-import Chat from "./src/pages/Chat/index"
-import Splash from "./src/pages/Splash/Splash"
+import React, { Component } from 'react';
+import {YellowBox} from 'react-native';
+import Routing from './src/pages/Routing/Routing';
 
-
-const AppStack = createStackNavigator({ Chat: Chat, Home: Home },{
-  headerMode: 'none',
-  navigationOptions: {
-  headerVisible: false,
-},});
-const AuthStack = createStackNavigator({ Login: Login },{
-  headerMode: 'none',
-  navigationOptions: {
-  headerVisible: false,
-},});
-const AuthLoadingScreen = createStackNavigator({Splash:Splash },{
-  headerMode: 'none',
-  navigationOptions: {
-  headerVisible: false,
-},});
-
-export default createAppContainer(createSwitchNavigator(
-  {
-    AuthLoading: AuthLoadingScreen,
-    App: AppStack,
-    Auth: AuthStack,
-  },
-  {
-    initialRouteName: 'AuthLoading',
+export default class App extends Component{
+  render(){
+    YellowBox.ignoreWarnings(['Warning: Async Storage has been extracted from react-native core'],
+    ["can't perform a react state update on an unmounted component. this is a no-op"]);
+    return(
+       <Routing/>
+    );
   }
-));
+}
+
