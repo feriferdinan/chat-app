@@ -3,7 +3,7 @@ import { createSwitchNavigator, createStackNavigator, createAppContainer } from 
 import Login from "../Login/index"
 import Home from "../Home/index"
 import Chat from "../Chat/index"
-import Splash from "../Splash/Splash"
+import Loading from "../Loading/Loading"
 
 
 
@@ -20,7 +20,7 @@ const AuthStack = createStackNavigator({ Login: Login },{
   navigationOptions: {
   headerVisible: false,
 },});
-const AuthLoadingScreen = createStackNavigator({Splash:Splash },{
+const AuthLoadingScreen = createStackNavigator({Loading:Loading },{
   headerMode: 'none',
   navigationOptions: {
   headerVisible: false,

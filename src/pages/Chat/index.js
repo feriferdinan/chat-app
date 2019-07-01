@@ -1,11 +1,9 @@
 import React from 'react';
 import {Keyboard,ScrollView,Alert,Modal,Text,TouchableOpacity,View, ImageBackground, StyleSheet,FlatList,AsyncStorage,BackHandler,TextInput ,Button,TouchableHighlight,YellowBox} from 'react-native';
 import { ListItem,Icon,Overlay  } from 'react-native-elements';
-import Popover from 'react-native-popover-view'
 
 const axios = require('axios');
 import configs from '../../../config'
-import { thisTypeAnnotation } from '@babel/types';
 
 export default class index extends React.Component {
   
@@ -23,23 +21,21 @@ export default class index extends React.Component {
           topButtonVisible:false,
           edited:false  
         }
+      }
+      
+      componentDidMount(){
         setInterval(
           this._getData
           ,1500)
-    }
-
-    async componentWillMount(){
+      }
+      async componentWillMount(){
+        
       that = this
         const valueToken= await AsyncStorage.getItem('token')
         this.setState({
           token:valueToken
         })
-        if(valueToken == null ){
-          await this.props.navigation.navigate('Login')
-          }else{
-            BackHandler.removeEventListener('hardwareBackPress');
-         }
-         let config = {
+        let config = {
           headers: {
             'Authorization': 'jwt ' + that.state.token
           }
@@ -51,18 +47,6 @@ export default class index extends React.Component {
           })
           console.log(that.state.userId)
         })
-        .catch(function (error) {
-          console.log(error);
-        });
-    }
-
-    async componentDidMount(){
-      that = this
-      let config = {
-        headers: {
-            'Authorization': 'jwt ' + that.state.token
-          }
-        }
         axios.get(`http://${configs.ipaddress}:3000/chat`,config)
         .then(function (response) {
           console.log(response.data.data)
@@ -73,7 +57,6 @@ export default class index extends React.Component {
         .catch(function (error) {
           console.log(error);
         });
-       
     }
     
     handleLogout = () =>{
@@ -162,7 +145,6 @@ export default class index extends React.Component {
          text:response.data.data.text,
          chatId:response.data.data.id
         })
-        that.setModalVisible(false)
       })
       .catch(function (error) {
         console.log(error);

@@ -78,7 +78,7 @@ render(){
 return(
 
 <View style={styles.container}>
-    <Text style={styles.title}>PUBLIC GROUP CHAT</Text>
+    <Text style={styles.title}>CHAT YUK</Text>
     <TextInput style={styles.inputBox}
         placeholder="Masukan Email Anda"
         placeholderTextColor = "grey"
