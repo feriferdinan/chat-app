@@ -13,7 +13,7 @@ export default class Loading extends React.Component {
   }
   _bootstrapAsync = async () => {
     const userToken = await AsyncStorage.getItem('token');
-    this.props.navigation.navigate(userToken ? 'Chat' : 'Login');
+    this.props.navigation.navigate(userToken ? 'Home' : 'Login');
   };
   render() {
     return (

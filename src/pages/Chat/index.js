@@ -1,6 +1,7 @@
 import React from 'react';
-import {Keyboard,ScrollView,Alert,Modal,Text,TouchableOpacity,View, ImageBackground, StyleSheet,FlatList,AsyncStorage,BackHandler,TextInput ,Button,TouchableHighlight,YellowBox} from 'react-native';
+import {StatusBar,Keyboard,ScrollView,Alert,Modal,Text,TouchableOpacity,View, ImageBackground, StyleSheet,FlatList,AsyncStorage,BackHandler,TextInput ,Button,TouchableHighlight,YellowBox} from 'react-native';
 import { ListItem,Icon,Overlay  } from 'react-native-elements';
+import Autolink from 'react-native-autolink';
 
 const axios = require('axios');
 import configs from '../../../config'
@@ -9,54 +10,68 @@ export default class index extends React.Component {
   
   constructor(){
     super()
-        this.state={
-          messages:[],
-          user:[],
-          userId:"",
-          chatId:"",
-          text:"",
-          token:"",
-          chatTittle:"Public Group Chat",
-          buttonVisible:false,
-          topButtonVisible:false,
-          edited:false  
-        }
-      }
-      
-      componentDidMount(){
-        setInterval(
-          this._getData
-          ,1500)
-      }
-      async componentWillMount(){
-        
+    this.state={
+      messages:[],
+      user:[],
+      room:[],
+      userId:"",
+      chatId:"",
+      roomId:"",
+      text:"",
+      token:"",
+      chatTittle:"",
+      height: 43,
+      buttonVisible:false,
+      topButtonVisible:false,
+      edited:false  
+    }
+  }
+
+    async componentWillMount(){
       that = this
+        const { navigation } = this.props;
+        const roomId = await navigation.getParam('roomId');
+        const userId = await navigation.getParam('userId');
+        const roomName = await navigation.getParam('roomName');
+        console.log('ini room id',roomId);
         const valueToken= await AsyncStorage.getItem('token')
         this.setState({
-          token:valueToken
+          token:valueToken,
+          roomId:roomId,
+          userId:userId,
+          chatTittle:roomName
         })
         let config = {
           headers: {
-            'Authorization': 'jwt ' + that.state.token
+            'Authorization': 'bearer ' + that.state.token
           }
         }
-        axios.get(`http://${configs.ipaddress}:3000/user`,config)
+        axios.get(`http://${configs.ipaddress}:3333/api/auth/profile`,config)
         .then(function (response) {
           that.setState({
-            userId:response.data.data.id
+            userId:response.data.id
           })
-          console.log(that.state.userId)
+          console.log('ini user id ',that.state.userId)
         })
-        axios.get(`http://${configs.ipaddress}:3000/chat`,config)
+        axios.get(`http://${configs.ipaddress}:3333/api/rooms/${that.state.roomId}`,config)
         .then(function (response) {
-          console.log(response.data.data)
           that.setState({
-            messages:response.data.data
+            room:response.data
+          })
+        })
+        axios.get(`http://${configs.ipaddress}:3333/api/chats/byroom/${that.state.roomId}`,config)
+        .then(function (response) {
+          console.log(response.data[0])
+          that.setState({
+            messages:response.data[0]
           })
         })
         .catch(function (error) {
           console.log(error);
         });
+        setInterval(
+          this._getData
+          ,1500)
     }
     
     handleLogout = () =>{
@@ -69,14 +84,14 @@ export default class index extends React.Component {
         const valueToken= await AsyncStorage.getItem('token')
          let config = {
           headers: {
-            'Authorization': 'jwt ' + valueToken
+            'Authorization': 'bearer ' + valueToken
           }
         }
-        axios.get(`http://${configs.ipaddress}:3000/chat`,config)
+        axios.get(`http://${configs.ipaddress}:3333/api/chats/byroom/${that.state.roomId}`,config)
         .then(function (response) {
-          console.log(response.data.data)
+          console.log(response.data[0])
           that.setState({
-            messages:response.data.data
+            messages:response.data[0]
           })
         })
         
@@ -106,14 +121,14 @@ export default class index extends React.Component {
             
          let config = {
           headers: {
-            'Authorization': 'jwt ' + this.state.token
+            'Authorization': 'bearer ' + this.state.token
           }
         }
-        axios.delete(`http://${configs.ipaddress}:3000/chat/${this.state.chatId}`,config)
+        axios.delete(`http://${configs.ipaddress}:3333/api/chats/${this.state.chatId}`,config)
         .then(function (response) {
           that.setState({
             chatId:"",
-            chatTittle:"Public Group Chat",
+            chatTittle:that.state.room.name,
             text:"",
             edited:false,
             topButtonVisible:false
@@ -128,6 +143,8 @@ export default class index extends React.Component {
         });
     }
     _updateChatConfirm =(id)=>{
+      console.log(id);
+      
       that = this
       that.setState({edited:true,
         chatTittle:"Edit Chat?",
@@ -135,15 +152,15 @@ export default class index extends React.Component {
        })
        let config = {
         headers: {
-          'Authorization': 'jwt ' + this.state.token
+          'Authorization': 'bearer ' + this.state.token
         }
       }
-      axios.get(`http://${configs.ipaddress}:3000/chat/${id}`,config)
+      axios.get(`http://${configs.ipaddress}:3333/api/chats/${id}`,config)
       .then(function (response) {
-        console.log(response.data.data)
+        console.log(response.data.id)
         that.setState({
-         text:response.data.data.text,
-         chatId:response.data.data.id
+          text:response.data.text,
+          chatId:response.data.id
         })
       })
       .catch(function (error) {
@@ -158,10 +175,10 @@ export default class index extends React.Component {
       
       let config = {
           headers: {
-            'Authorization': 'jwt ' + this.state.token
+            'Authorization': 'bearer ' + this.state.token
           }
         }
-        axios.patch(`http://${configs.ipaddress}:3000/chat/${that.state.chatId}`,{
+        axios.put(`http://${configs.ipaddress}:3333/api/chats/${that.state.chatId}`,{
           text: this.state.text
         },config)
         .then(function (response) {
@@ -169,7 +186,7 @@ export default class index extends React.Component {
           console.log(response);
           that.setState({
             chatId:"",
-            chatTittle:"Public Group Chat",
+            chatTittle:that.state.room.name,
             text:"",
             edited:false,
             topButtonVisible:false
@@ -185,11 +202,12 @@ export default class index extends React.Component {
         that=this
         let config = {
             headers: {
-              'Authorization': 'jwt ' + this.state.token
+              'Authorization': 'bearer ' + this.state.token
             }
           }
-          axios.post(`http://${configs.ipaddress}:3000/chat`,{
-            text: this.state.text
+          axios.post(`http://${configs.ipaddress}:3333/api/chats`,{
+            text: this.state.text,
+            room_id: this.state.roomId
           },config)
           .then(function (response) {
             console.log(response);
@@ -206,55 +224,65 @@ export default class index extends React.Component {
     deleteAndCancel= ()=> {
       return(
         <View style={{flexDirection:"row"}} >
+       
         <TouchableHighlight 
           underlayColor="#f8f9fa"
           style={[styles.buttonCancel,{backgroundColor:"#dc3545",borderWidth:0}]}
           onPress={()=>this._deleteChatConfirm(this.state.chatId)} >   
-        <View>          
-        <Text style={{padding:5,paddingHorizontal:10,color:"#ffff"}} >Hapus</Text>
-        </View>
+          <View>          
+          <Text style={{padding:5,paddingHorizontal:10,color:"#ffff"}} >Hapus</Text>
+          </View>
+          </TouchableHighlight>
+            <TouchableHighlight
+              underlayColor="#f8f9fa" 
+              style={[styles.buttonCancel,{borderColor:"#fff"}]}
+              onPress={()=>this.setState({
+                text:"",
+                chatId:"",
+                edited:false,
+                chatTittle:that.state.room.name,
+                topButtonVisible:false
+              })} >   
+          <View>          
+          <Text style={{padding:5,paddingHorizontal:13,color:"#FFF"}}>Batal</Text>
+          </View>
         </TouchableHighlight>
-          <TouchableHighlight
-            underlayColor="#f8f9fa" 
-            style={[styles.buttonCancel,{borderColor:"#8a9093"}]}
-            onPress={()=>this.setState({
-              text:"",
-              chatId:"",
-              edited:false,
-              chatTittle:"Public Group Chat",
-              topButtonVisible:false
-            })} >   
-        <View>          
-        <Text style={{padding:5,paddingHorizontal:13,color:"black"}}>Batal</Text>
-        </View>
-      </TouchableHighlight>
       </View>
       )
     }
+    updateSize = (height) => {
+      this.setState({
+        height
+      });
+    }
 
     render() {
+      const {text, height} = this.state;
+      let newStyle = {
+        height
+      }
         return (
             
         <ImageBackground
 				  style={[ styles.container, styles.backgroundImage ]}
-				  source={require('../../assets/img/background.png')}>
+				  source={require('../../assets/img/backgroundtele.jpg')}>
+           <StatusBar  barStyle='light-content' backgroundColor="#426382" translucent = {true} />
+           <View style={{margin:12}} />
                 <ListItem 
-                    containerStyle={{backgroundColor:"#eeeeee"}}
-                    title={this.state.chatTittle}
-                    titleStyle={{fontWeight:"bold"}}
+                    containerStyle={{backgroundColor:"#517da2",maxHeight:50}}
                     leftElement={
-                      (this.state.edited==true)?<View/>:
-                        <TouchableHighlight
-                          style={styles.buttonCancel}
-                          onPress={this.handleLogout} >   
-                            <View style={{flexDirection:"row",padding:5}} >          
-                              <Icon name="left" type="antdesign" color="grey" size={16} />
-                              <Text>Logout</Text>
-                            </View>
-                        </TouchableHighlight>
+                      <Icon name="arrowleft" type="antdesign" size={23} color="white" 
+                        onPress={()=>this.props.navigation.navigate('Home')}
+                      />
                     }
+                    title={this.state.chatTittle}
+                    subtitle={ this.state.edited==false ? "online" : null }
+                    subtitleStyle={{color:"#FFF"}}
+                    titleStyle={{fontWeight:"bold",color:"#fff"}}
+                    leftAvatar={{  source:this.state.room.type=="group" ? require('../../assets/img/team.png') :require('../../assets/img/user1.png') }}
                     rightElement={
-                      (this.state.topButtonVisible==true) ? this.deleteAndCancel() : <View/>
+                      (this.state.topButtonVisible==true) ? this.deleteAndCancel() : 
+                      <Icon   name= "more-vertical"  color="#fff" size={24} type="feather" />
                     }
                 />
         <ScrollView 
@@ -269,11 +297,20 @@ export default class index extends React.Component {
 					keyExtractor={(item, index) => (`message-${index}`)}
 					renderItem={Message = ({ item }) => (
                         <View>
-                        <TouchableOpacity  disabled={(this.state.userId==item.user_id) ? false : true} onLongPress={()=>this._updateChatConfirm(item.id)} >
+                        <TouchableOpacity 
+                          disabled={(this.state.userId==item.user_id) ? false : true} 
+                          delayLongPress={100} 
+                          onLongPress={()=>this._updateChatConfirm(item.id)} >
                         <View style={ (this.state.userId==item.user_id) ? styles.wrapperMessageRight : styles.wrapperMessageLeft } >
                             <View style={
                                 [styles.message,
-                                (this.state.userId==item.user_id) ? styles.incomingMessageRight : styles.incomingMessageLeft]
+                                (this.state.userId==item.user_id) ? [styles.incomingMessageRight,{
+                                  borderTopLeftRadius:10 ,
+                                  borderBottomLeftRadius: 10,
+                                  borderTopRightRadius: 10,}] : [styles.incomingMessageLeft,{ 
+                                  borderTopLeftRadius:10 ,
+                                  borderBottomRightRadius: 10,
+                                  borderTopRightRadius: 10,}]]
                                 }>
 
                                { 
@@ -281,41 +318,47 @@ export default class index extends React.Component {
                                    ?
                                    <View/>
                                   :
-                                  <View style={{  alignItems:"flex-end"}} >
-                                    <Text style={styles.nameUser} >~ {item.user.name}</Text>
+                                  <View style={{  alignItems:"flex-start"}} >
+                                    <Text style={styles.nameUser} >{item.username}</Text>
                                    </View>
                                 }
 
-                                <View style={{flex:1,flexDirection:"row",flexWrap:"wrap"}}>
-                                    <View>
-                                    <Text>{item.text}</Text>
-                                    </View>
-                                    <View style={{flex:1,alignItems:"flex-end"}} >
-                                    <Text>{item.createdAt.split('T')[1].split(':').concat().slice(0,2)}</Text>
-                                    </View>
+                                <View style={{flex:1,flexDirection:"row"}}>
+                                  <View style={{flexDirection:"row",flexWrap:"wrap"}} >
+
+                                    <Text style={{color:"#000",alignSelf:"flex-start",paddingRight:10}} >
+                                    <Autolink 
+                                      text={item.text}
+                                    />
+                                    </Text>
+                                    <Text style={{alignSelf:"flex-end", fontSize:10,color:"green",bottom:-5}} >{item.created_at.split('T')[1].split(':')[0]+":"+item.created_at.split('T')[1].split(':')[1]}</Text>
+                                  </View>
                                 </View>
                             </View>
                           </View>
                         </TouchableOpacity>
                         </View>
-                    )}
+          )}
 				/>
         </ScrollView>
 				<View style={styles.compose}>
 				<TextInput
-					style={styles.composeText}
+					style={[styles.composeText,newStyle,{maxHeight:120}]}
 					value={this.state.text}
 					onChangeText={(text) => this.setState({text:text})}
-					editable = {true}
+					editable={true}
+          multiline={true}
           returnKeyType = {"send"}
-          focus={(this.state.text==null)?false:true}
+          focus={(this.state.text==null) ? false : true}
           autoFocus = {true}
-					maxLength = {40}
           placeholder="Ketik Pesan"
+          onContentSizeChange={(e) => this.updateSize(e.nativeEvent.contentSize.height)}
 				/>
-                <TouchableOpacity   onPress={(this.state.edited==true) ? this._updateChat : this.submitText } >
+                <TouchableOpacity
+                  disabled={(this.state.text=="") ? true : false }   
+                  onPress={(this.state.edited==true) ? this._updateChat : this.submitText } >
                     <View
-                     style={styles.button}
+                     style={[styles.button,{ backgroundColor: (this.state.text=="") ? 'rgba(81, 125, 162, 0.5)' : 'rgba(81, 125, 162, 1)' }]}
                      >
                     { (this.state.edited==true)?
                     <Icon name="pencil" color="#fff" size={30} type="evilicon" />  
@@ -326,12 +369,9 @@ export default class index extends React.Component {
                 </TouchableOpacity>
 			</View>
 			</ImageBackground>
-        )
+      )
     }
 }
-
-
-
 
 
 const styles = StyleSheet.create({
@@ -350,14 +390,20 @@ const styles = StyleSheet.create({
         borderRadius: 10
     },
     composeText: {
-        width: '85%',
+        width: '87%',
         paddingHorizontal: 10,
-        height: 40,
         backgroundColor: 'white',
         borderColor: '#979797',
         borderStyle: 'solid',
-        borderWidth: 1,
         borderRadius: 20,
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 1,
+        },
+        shadowOpacity: 0.20,
+        shadowRadius: 1.41,
+        elevation: 2,
       },
       compose: {
         flexDirection: 'row',
@@ -365,18 +411,27 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         margin: 10,
         borderRadius: 20,
-        backgroundColor:"transparent"
+        backgroundColor:"transparent",
+        
       },
       button: {
-        width:40,
-        height:40,
-        backgroundColor:'#1c313a',
+        width:43,
+        height:43,
         borderRadius: 100,
         marginVertical: 10,
         paddingVertical: 13,
         alignItems:"center",
         justifyContent:"center",
         alignContent: 'center',
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 4,
+        },
+        shadowOpacity: 0.30,
+        shadowRadius: 4.65,
+
+        elevation: 8,
       },
 
     buttonCancel:{
@@ -385,27 +440,38 @@ const styles = StyleSheet.create({
       borderRadius:5
     },
     wrapperMessageRight:{
-      flexDirection: 'row', justifyContent: 'flex-end'
+      flexDirection: 'row',
+      alignSelf: 'flex-end',
     },
     wrapperMessageLeft:{
       flexDirection: 'row',
+      alignSelf: 'flex-start',
     },
     message: {
-        width:"70%",
-        margin: 10,
-        marginVertical: 3,
-        padding: 10,
-        borderWidth: 0,
-        borderRadius: 10
+      maxWidth:"85%",
+      margin: 10,
+      marginVertical: 3,
+      padding: 7,
+      borderWidth: 0,
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 1,
+      },
+      shadowOpacity: 0.18,
+      shadowRadius: 1.00,
+      elevation: 1,
       },
       incomingMessageRight: {
-        backgroundColor: '#E1FFC7'
+        backgroundColor: '#Effedd'
       },
       incomingMessageLeft: {
         backgroundColor: '#ffff'
       },
       nameUser:{
-        fontWeight:"bold"
+        fontWeight:"bold",
+        fontSize:15,
+        color:"#cc7c32"
       } 
    
 })

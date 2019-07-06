@@ -1,30 +1,32 @@
-import { createSwitchNavigator, createStackNavigator, createAppContainer } from 'react-navigation';
+import { createSwitchNavigator, createStackNavigator, createAppContainer ,createMaterialTopTabNavigator} from 'react-navigation';
 
-import Login from "../Login/index"
-import Home from "../Home/index"
-import Chat from "../Chat/index"
-import Loading from "../Loading/Loading"
+import LoadingScreen from "../Loading/Loading"
+import LoginScreen from "../Login/index"
+import HomeScreen from "../Home/index"
+import ChatScreen from "../Chat/index"
 
 
 
 const AppStack = createStackNavigator({ 
-  Chat: Chat,
-  Home: Home 
+  Home: HomeScreen, 
+  Chat: ChatScreen
 },{
   headerMode: 'none',
   navigationOptions: {
   headerVisible: false,
 },});
-const AuthStack = createStackNavigator({ Login: Login },{
+const AuthStack = createStackNavigator({ Login: LoginScreen },{
   headerMode: 'none',
   navigationOptions: {
   headerVisible: false,
 },});
-const AuthLoadingScreen = createStackNavigator({Loading:Loading },{
+const AuthLoadingScreen = createStackNavigator({Loading:LoadingScreen },{
   headerMode: 'none',
   navigationOptions: {
   headerVisible: false,
 },});
+
+
 
 export default createAppContainer(createSwitchNavigator(
   {

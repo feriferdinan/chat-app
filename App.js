@@ -5,7 +5,7 @@ import Routing from './src/pages/Routing/Routing';
 export default class App extends Component{
   render(){
     YellowBox.ignoreWarnings(['Warning: Async Storage has been extracted from react-native core'],
-    ["can't perform a react state update on an unmounted component. this is a no-op"]);
+    ["Warning: Can't perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in the componentWillUnmount method."]);
     return(
        <Routing/>
     );
