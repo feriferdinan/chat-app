@@ -10,11 +10,10 @@ Alert,
 StatusBar
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-
 import { Spinner } from 'native-base';
 const axios = require('axios');
 import configs from '../../../config'
-
+import IconFA from 'react-native-vector-icons/FontAwesome';
 
 export default class index extends Component {
     constructor(){
@@ -22,6 +21,7 @@ export default class index extends Component {
       
                       
         this.state={
+            inputUsername:"",
             inputEmail:"",
             inputPassword:"",
             icEye: 'visibility-off',
@@ -59,41 +59,30 @@ export default class index extends Component {
   };
 
   
-    handleLogin =  () => {
-      if( this.state.inputEmail=="" || this.state.inputPassword=="") {
+    handleRegister =  () => {
+      if(this.state.inputUsername=="" || this.state.inputEmail=="" || this.state.inputPassword=="") {
         alert("Lengkapi Form Terlebih dahulu")  
       }else{ 
         this.setState({isLoading:true})
-        axios.post(`http://${configs.ipaddress}:3333/api/auth/login`,{
+        axios.post(`http://${configs.ipaddress}:3333/api/users`,{
+          "username" : this.state.inputUsername,
           "email" : this.state.inputEmail,
           "password" : this.state.inputPassword
         })
           .then (res => {
             console.log(res.data.token)
-            AsyncStorage.setItem('token', res.data.token);
-            if (res.data.token == null){
-              alert("Tidak Dapat Menemukan Akun")
+            if (res.data == null){
+              alert("Tidak Dapat Register")
             }else{
+            alert("Akun Berhasil Dibuat silahkan Login")
               this.setState({isLoading:false})
-              this.props.navigation.navigate('Home')
+              this.props.navigation.navigate('Login')
             }
           })
         .catch(err =>{
           console.log('erordi auth sign in:',err)
           this.setState({isLoading:false})
-          Alert.alert(
-            'Tidak Dapat Menemukan Akun',
-            `Kelihatanya ${this.state.inputEmail} tidak cocok dengan akun yang ada. Jika Anda belum memiliki akun Chat, Anda dapat membuatnya sekarang. `,
-            [
-              {
-                text: 'BUAT AKUN',
-                onPress: () => this.props.navigation.navigate('Register'),
-                style: "default",
-              },
-              {text: 'COBA LAGI',  onPress:this.handleLogin},
-            ],
-           
-          );
+          alert('gagal registrasi, pastikan koneksi anda stabil')
         })}
     }
 
@@ -110,7 +99,26 @@ render(){
   <View style={styles.container}>
 <StatusBar  barStyle='dark-content' backgroundColor="#fff" translucent = {true} />
   <View style={styles.wrapperForm} >
-    <Text style={styles.title}>ARKACHAT</Text>
+    <Text style={styles.title}>Registrasi Sekarang</Text>
+    <View style={styles.inputBox} >
+    <TextInput 
+        value={this.state.inputUsername}
+        placeholder="Masukan Nama Anda"
+        placeholderTextColor = "grey"
+        returnKeyType = {"next"}
+        autoFocus = {true}
+        onSubmitEditing={() => { this.secondTextInput }}
+        onChangeText={(text)=>this.setState({
+            inputUsername:text
+        })}
+    />
+    <IconFA 
+        style={{position:"absolute",left:12,top:15}}
+        name="user"
+        size={16}
+        color="rgba(0,0,0,0.5)"
+    />
+    </View>
     <View style={styles.inputBox} >
     <TextInput 
         value={this.state.inputEmail}
@@ -159,19 +167,12 @@ render(){
 
     <TouchableOpacity 
       style={styles.button}
-      onPress={this.handleLogin}>
-      <Text style={styles.buttonText}>MASUK</Text>
+      onPress={this.handleRegister}>
+      <Text style={styles.buttonText}>DAFTAR</Text>
     </TouchableOpacity>
-    
+  
 </View>
-  <View style={{justifyContent:'center',alignItems: 'center',position:"absolute",bottom:20}}>
-      <Text>Belum Mempunyai Akun ?</Text>
-    <TouchableOpacity>
-      <Text 
-        onPress={()=>this.props.navigation.navigate('Register')}
-        style={{color:"#517da2",fontWeight:"bold"}} >DAFTAR SEKARANG!</Text>
-    </TouchableOpacity>
-</View>
+
 </View>
 
 )}

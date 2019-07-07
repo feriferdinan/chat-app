@@ -1,5 +1,5 @@
 import React from 'react';
-import {StatusBar,Keyboard,ScrollView,Alert,Modal,Text,TouchableOpacity,View, ImageBackground, StyleSheet,FlatList,AsyncStorage,BackHandler,TextInput ,Button,TouchableHighlight,YellowBox} from 'react-native';
+import {StatusBar,Keyboard,ScrollView,Modal,Text,TouchableOpacity,View, ImageBackground, StyleSheet,FlatList,AsyncStorage,BackHandler,TextInput ,Button,TouchableHighlight,YellowBox,Alert} from 'react-native';
 import { ListItem,Icon,Divider ,Badge,Avatar } from 'react-native-elements';
 
 const axios = require('axios');
@@ -49,9 +49,18 @@ export default class index extends React.Component {
           
       }
 
-    handleLogout = async () =>{
-       await AsyncStorage.clear();
-        this.props.navigation.navigate('Login')
+    handleLogout =  () =>{
+        Alert.alert(
+          'Mau Logout ?',
+          `Yakin ? `,
+          [
+            {text: 'Batal',},
+            {text: 'Logout', onPress:()=>
+             [AsyncStorage.clear(),
+              this.props.navigation.navigate('Login')]},
+          ],
+         
+        );
     }
 
   
