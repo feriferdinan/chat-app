@@ -10,9 +10,10 @@ Alert,
 StatusBar
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-
+import { Spinner } from 'native-base';
 const axios = require('axios');
 import configs from '../../../config'
+import { end } from 'react-native-autolink/src/truncate';
 
 
 export default class index extends Component {
@@ -24,7 +25,8 @@ export default class index extends Component {
             inputEmail:"",
             inputPassword:"",
             icEye: 'visibility-off',
-            showPassword: true
+            showPassword: true,
+            isLoading:false
         }
        
       
@@ -58,6 +60,10 @@ export default class index extends Component {
 
   
     handleLogin =  () => {
+      if( this.state.inputEmail=="" || this.state.inputPassword=="") {
+        alert("Lengkapi Form Terlebih dahulu")  
+      }else{ 
+        this.setState({isLoading:true})
         axios.post(`http://${configs.ipaddress}:3333/api/auth/login`,{
           "email" : this.state.inputEmail,
           "password" : this.state.inputPassword
@@ -68,11 +74,13 @@ export default class index extends Component {
             if (res.data.token == null){
               alert("Tidak Dapat Menemukan Akun")
             }else{
+              this.setState({isLoading:false})
               this.props.navigation.navigate('Home')
             }
           })
         .catch(err =>{
           console.log('erordi auth sign in:',err)
+          this.setState({isLoading:false})
           Alert.alert(
             'Tidak Dapat Menemukan Akun',
             `Kelihatanya ${this.state.inputEmail} tidak cocok dengan akun yang ada. Jika Anda belum memiliki akun Chat, Anda dapat membuatnya sekarang. `,
@@ -86,19 +94,26 @@ export default class index extends Component {
             ],
            
           );
-        })
+        })}
     }
 
 
 render(){
-return(
-
-<View style={styles.container}>
+  return(
+    (this.state.isLoading==true) 
+    ? 
+    <View style={{flexGrow: 1,justifyContent:'center',alignItems: 'center'}}> 
+      <Spinner color='#517da2' style={{justifyContent:"center"}} />
+      <Text>Loading . . .</Text>
+    </View>
+    :
+  <View style={styles.container}>
 <StatusBar  barStyle='dark-content' backgroundColor="#fff" translucent = {true} />
   <View style={styles.wrapperForm} >
     <Text style={styles.title}>ARKACHAT</Text>
     <View style={styles.inputBox} >
     <TextInput 
+        value={this.state.inputEmail}
         placeholder="Masukan Email Anda"
         placeholderTextColor = "grey"
         returnKeyType = {"next"}
@@ -108,13 +123,12 @@ return(
             inputEmail:text
         })}
     />
-    {/* <Icon 
-        style={styles.icon}
+    <Icon 
+        style={{position:"absolute",left:12,top:15}}
         name="email"
-        size={30}
-        color={componentColors.password_icon_color}
-        onPress={this.changePwdType}
-    /> */}
+        size={16}
+        color="rgba(0,0,0,0.5)"
+    />
     </View>
     <View style={[styles.wrapperInputPassword, styles.inputBox]} >
     <TextInput
@@ -129,9 +143,15 @@ return(
         })}
     />
     <Icon 
+        style={{position:"absolute",left:12,top:15}}
+        name="lock"
+        size={16}
+        color="rgba(0,0,0,0.5)"
+    />
+    <Icon 
         style={styles.icon}
         name={this.state.icEye}
-        size={30}
+        size={25}
         color={componentColors.password_icon_color}
         onPress={this.changePwdType}
     />
@@ -142,10 +162,12 @@ return(
       onPress={this.handleLogin}>
       <Text style={styles.buttonText}>MASUK</Text>
     </TouchableOpacity>
+  
 </View>
+
 </View>
-)
-}
+
+)}
 }
 
 const styles = StyleSheet.create({
@@ -158,7 +180,7 @@ container : {
 title:{
   fontSize:20,
   fontWeight:"700",
-  color:"#fff",
+  color:"#1c313a",
   margin:10,
  
 },
@@ -166,6 +188,7 @@ inputBox: {
     width:"90%",
     borderRadius: 25,
     paddingHorizontal:16,
+    paddingLeft:30,
     fontSize:16,
     color:'grey',
     marginVertical: 10,
@@ -181,8 +204,8 @@ inputBox: {
     elevation: 9,
 },
 wrapperForm:{
-  width:"95%",
-  backgroundColor:'rgba(86,130,163,0.6)',
+  width:"100%",
+  backgroundColor:'rgba(86,130,163,0)',
   flexDirection:"column",
   alignItems:"center",
   borderRadius:20,
@@ -194,8 +217,8 @@ wrapperInputPassword:{
 },
 icon: {
   position: 'absolute',
-  top: 10,
-  right: 10
+  top: 11,
+  right: 15
 },
 button: {
     width:"90%",
@@ -222,5 +245,5 @@ buttonText: {
 });
 
 export const componentColors = {
-  password_icon_color:'#517da2',
+  password_icon_color:'#aeaeae',
 };

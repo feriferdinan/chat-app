@@ -66,7 +66,7 @@ export default class index extends React.Component {
                     containerStyle={{backgroundColor:"#517da2",maxHeight:50}}
                     title="Obrolan"
                     leftIcon={{name:"menu",type:"entypo",size:30,color:"#FFF"}}
-                    titleStyle={{fontWeight:"bold",justifyContent:"center",color:"#fff",fontSize:26}}
+                    titleStyle={{fontWeight:"bold",justifyContent:"center",color:"#fff",fontSize:22}}
                     rightElement={
                         <TouchableHighlight
                           onPress={this.handleLogout} >   
