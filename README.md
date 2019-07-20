@@ -1,4 +1,4 @@
-<h1 align="center">:octocat: Cloning Facebook :octocat:</h1>
+<h1 align="center">:octocat: CHAT APP :octocat:</h1>
 
   <p align="center">
   <img  src="https://github.com/feriferdinan/chat-app/blob/master/t_video61656966603336584081.gif"/>
