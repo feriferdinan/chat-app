@@ -16,8 +16,8 @@
 - [Contributors](#contributors)
 
 ## Related Project
-<a href="https://github.com/feriferdinan/chat-app-backend-adonis">AdonisJs - CHAT App RESTfull API</a>
-<a href="https://github.com/feriferdinan/chat-app-backend">ExpressJS - CHAT App RESTfull API</a>
+* <a href="https://github.com/feriferdinan/chat-app-backend-adonis">AdonisJs - CHAT App RESTfull API</a>
+* <a href="https://github.com/feriferdinan/chat-app-backend">ExpressJS - CHAT App RESTfull API</a>
 
 ## Introduction
 Chat App - Build With React Native and Adonis
