@@ -331,7 +331,7 @@ export default class index extends React.Component {
                                       text={item.text}
                                     />
                                     </Text>
-                                    <Text style={{alignSelf:"flex-end", fontSize:10,color:"green",bottom:-5}} >{item.created_at.split('T')[1].split(':')[0]+":"+item.created_at.split('T')[1].split(':')[1]}</Text>
+                                    <Text style={{alignSelf:"flex-end", fontSize:10,color:"green",bottom:-5}} >{(item.created_at==null) ? null : item.created_at.split('T')[1].split(':')[0]+":"+item.created_at.split('T')[1].split(':')[1]}</Text>
                                   </View>
                                 </View>
                             </View>

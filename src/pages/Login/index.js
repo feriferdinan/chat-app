@@ -110,7 +110,7 @@ render(){
   <View style={styles.container}>
 <StatusBar  barStyle='dark-content' backgroundColor="#fff" translucent = {true} />
   <View style={styles.wrapperForm} >
-    <Text style={styles.title}>ARKACHAT</Text>
+    <Text style={styles.title}>CHAT YUK</Text>
     <View style={styles.inputBox} >
     <TextInput 
         value={this.state.inputEmail}
