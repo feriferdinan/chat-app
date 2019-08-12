@@ -7,14 +7,17 @@ TextInput,
 TouchableOpacity,
 AsyncStorage,
 Alert,
-StatusBar
+StatusBar,
+Dimensions
 } from 'react-native';
+const screenWidth = Math.round(Dimensions.get('window').width);
+
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Spinner } from 'native-base';
 const axios = require('axios');
 import configs from '../../../config'
 import IconFA from 'react-native-vector-icons/FontAwesome';
-
+let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 export default class index extends Component {
     constructor(){
         super()
@@ -107,7 +110,7 @@ render(){
         placeholderTextColor = "grey"
         returnKeyType = {"next"}
         autoFocus = {true}
-        onSubmitEditing={() => { this.secondTextInput }}
+        onSubmitEditing={() => { this.secondTextInput.focus() }}
         onChangeText={(text)=>this.setState({
             inputUsername:text
         })}
@@ -125,8 +128,8 @@ render(){
         placeholder="Masukan Email Anda"
         placeholderTextColor = "grey"
         returnKeyType = {"next"}
-        autoFocus = {true}
-        onSubmitEditing={() => { this.secondTextInput }}
+        ref={(input) => { this.secondTextInput = input; }}
+        onSubmitEditing={() => { this.inputPass.focus() }}
         onChangeText={(text)=>this.setState({
             inputEmail:text
         })}
@@ -138,12 +141,16 @@ render(){
         color="rgba(0,0,0,0.5)"
     />
     </View>
+    {
+      (reg.test(this.state.inputEmail) == 1 || this.state.inputEmail=="") ? null :
+    <Text style={{color:'red'}}>Email tidak valid</Text>
+    }
     <View style={[styles.wrapperInputPassword, styles.inputBox]} >
     <TextInput
         value={this.state.inputPassword}
         placeholder="Masukan Password Anda"
         secureTextEntry={this.state.showPassword}
-        ref={(input) => { this.secondTextInput = input; }}
+        ref={(input) => { this.inputPass = input; }}
         returnKeyType = {"go"}
         placeholderTextColor = "grey"
         onChangeText={(text)=>this.setState({
@@ -166,7 +173,8 @@ render(){
     </View>
 
     <TouchableOpacity 
-      style={styles.button}
+      disabled={(reg.test(this.state.inputEmail) == 0)?true:false}
+      style={[styles.button]}
       onPress={this.handleRegister}>
       <Text style={styles.buttonText}>DAFTAR</Text>
     </TouchableOpacity>
@@ -193,7 +201,7 @@ title:{
  
 },
 inputBox: {
-    width:"90%",
+    width:screenWidth - screenWidth*13/100,
     borderRadius: 25,
     paddingHorizontal:16,
     paddingLeft:30,
@@ -229,7 +237,7 @@ icon: {
   right: 15
 },
 button: {
-    width:"90%",
+    width:screenWidth - screenWidth*13/100,
     backgroundColor:'#517da2',
     borderRadius: 25,
     marginVertical: 10,

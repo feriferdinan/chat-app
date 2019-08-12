@@ -7,13 +7,20 @@ TextInput,
 TouchableOpacity,
 AsyncStorage,
 Alert,
-StatusBar
+StatusBar,
+Dimensions 
 } from 'react-native';
+const screenWidth = Math.round(Dimensions.get('window').width);
+const screenHeight = Math.round(Dimensions.get('window').height);
+
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import { Spinner } from 'native-base';
 const axios = require('axios');
 import configs from '../../../config'
+
+import AnimateLoadingButton from 'react-native-animate-loading-button';
+let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
 
 export default class index extends Component {
@@ -26,7 +33,7 @@ export default class index extends Component {
             inputPassword:"",
             icEye: 'visibility-off',
             showPassword: true,
-            isLoading:false
+            isLoading:true
         }
        
       
@@ -60,10 +67,10 @@ export default class index extends Component {
 
   
     handleLogin =  () => {
-      if( this.state.inputEmail=="" || this.state.inputPassword=="") {
+      if(this.state.inputEmail=="" || this.state.inputPassword=="") {
         alert("Lengkapi Form Terlebih dahulu")  
       }else{ 
-        this.setState({isLoading:true})
+        this.loadingButton.showLoading(true);
         axios.post(`http://${configs.ipaddress}:3333/api/auth/login`,{
           "email" : this.state.inputEmail,
           "password" : this.state.inputPassword
@@ -74,13 +81,13 @@ export default class index extends Component {
             if (res.data.token == null){
               alert("Tidak Dapat Menemukan Akun")
             }else{
-              this.setState({isLoading:false})
+              this.loadingButton.showLoading(false);
               this.props.navigation.navigate('Home')
             }
           })
         .catch(err =>{
           console.log('erordi auth sign in:',err)
-          this.setState({isLoading:false})
+          this.loadingButton.showLoading(false);
           Alert.alert(
             'Tidak Dapat Menemukan Akun',
             `Kelihatanya ${this.state.inputEmail} tidak cocok dengan akun yang ada. Jika Anda belum memiliki akun Chat, Anda dapat membuatnya sekarang. `,
@@ -99,14 +106,8 @@ export default class index extends Component {
 
 
 render(){
+  console.log(screenWidth)
   return(
-    (this.state.isLoading==true) 
-    ? 
-    <View style={{flexGrow: 1,justifyContent:'center',alignItems: 'center'}}> 
-      <Spinner color='#517da2' style={{justifyContent:"center"}} />
-      <Text>Loading . . .</Text>
-    </View>
-    :
   <View style={styles.container}>
 <StatusBar  barStyle='dark-content' backgroundColor="#fff" translucent = {true} />
   <View style={styles.wrapperForm} >
@@ -114,11 +115,13 @@ render(){
     <View style={styles.inputBox} >
     <TextInput 
         value={this.state.inputEmail}
+        autoCompleteType='email'
+        keyboardType="email-address"
         placeholder="Masukan Email Anda"
         placeholderTextColor = "grey"
         returnKeyType = {"next"}
         autoFocus = {true}
-        onSubmitEditing={() => { this.secondTextInput }}
+        onSubmitEditing={() =>  this.secondTextInput.focus()}
         onChangeText={(text)=>this.setState({
             inputEmail:text
         })}
@@ -130,6 +133,10 @@ render(){
         color="rgba(0,0,0,0.5)"
     />
     </View>
+    {
+      (reg.test(this.state.inputEmail) == 1 || this.state.inputEmail=="") ? null :
+    <Text style={{color:'red'}}>Email tidak valid</Text>
+    }
     <View style={[styles.wrapperInputPassword, styles.inputBox]} >
     <TextInput
         value={this.state.inputPassword}
@@ -156,13 +163,20 @@ render(){
         onPress={this.changePwdType}
     />
     </View>
+    <View style={{marginVertical:10}}>
+      <AnimateLoadingButton
+            ref={c => (this.loadingButton = c)}
+            width={screenWidth - screenWidth*13/100}
+            height={50}
+            borderRadius={25}
+            title="MASUK"
+            titleFontSize={16}
+            titleColor="#fff"
+            backgroundColor= { (reg.test(this.state.inputEmail) == 0)? "rgba(81,125,162,0.6)" : "rgba(81,125,162,1)" }
+            onPress={ (reg.test(this.state.inputEmail) == 0)? null : this.handleLogin}
+          />
+    </View>
 
-    <TouchableOpacity 
-      style={styles.button}
-      onPress={this.handleLogin}>
-      <Text style={styles.buttonText}>MASUK</Text>
-    </TouchableOpacity>
-    
 </View>
   <View style={{justifyContent:'center',alignItems: 'center',position:"absolute",bottom:20}}>
       <Text>Belum Mempunyai Akun ?</Text>
@@ -192,7 +206,7 @@ title:{
  
 },
 inputBox: {
-    width:"90%",
+    width:screenWidth - screenWidth*13/100,
     borderRadius: 25,
     paddingHorizontal:16,
     paddingLeft:30,
